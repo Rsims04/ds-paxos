@@ -24,9 +24,9 @@ Options: (default will be immediate)
 - large
 - none
 
-example~1: `./Member M1` <br/>
-example~2: `./Member M1 immediate` <br/>
-example~3: `./Member M1 immediate offline` <br/><br/>
+example-1: `./Member M1` <br/>
+example-2: `./Member M1 immediate` <br/>
+example-3: `./Member M1 immediate offline` <br/><br/>
 
 goesOffline: type `offline`, and the proposer will go offline after proposing.<br/>
 
@@ -42,18 +42,18 @@ Run `make clean`.
 
 ### Test Case 1
 
-Run `./PAXOS-CASE1`.
+Run `./PAXOS-CASE1`.<br>
 This test involves all members having immediate response times.
 
 ### Test Case 2
 
-Run `./PAXOS-CASE2`.
+Run `./PAXOS-CASE2`.<br>
 This test involves all members having varying response times. M3 will not respond at all.
 M
 
 ### Test Case 3
 
-Run `./PAXOS-CASE3`.
+Run `./PAXOS-CASE3`.<br>
 M3 will be the leader and will die on propose. This shows that the system can recover after losing a member,<br/>
 and that M3 can still win the election even though it is not online and returning messages.
 
