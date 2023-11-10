@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Immediate response to voting queries
+# Run Concurrently
+
+./Member M1&
+./Member M2&
+./Member M3&
+./Member M4&
+./Member M5&
+./Member M6&
+./Member M7&
+./Member M8&
+./Member M9&
+
+wait
+exit 0

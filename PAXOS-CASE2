@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Several Profiles with Different Delays.
+
+./Member M1 immediate&
+./Member M2 small&
+./Member M3 none&
+./Member M4 immediate&
+./Member M5 small&
+./Member M6 large&
+./Member M7 immediate&
+./Member M8 small&
+./Member M9 large&
+
+wait
+exit 0

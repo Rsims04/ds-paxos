@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Proposer Goes Offline After Proposal.
+
+./Member M1 immediate&
+./Member M2 immediate&
+./Member M3 immediate offline&
+./Member M4&
+./Member M5&
+./Member M6&
+./Member M7&
+./Member M8&
+./Member M9&
+
+wait
+exit 0
