@@ -1,0 +1,8 @@
+#!/bin/bash
+
+java -cp dest build.Member M1&
+java -cp dest build.Member M2&
+java -cp dest build.Member M3&
+
+wait
+exit 0

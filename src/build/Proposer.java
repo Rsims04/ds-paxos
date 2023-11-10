@@ -35,8 +35,6 @@ public class Proposer extends Member {
   String acceptedID;
   String acceptValue;
 
-  String value;
-
   // CONSENSUS
   Boolean consensusReached = false;
   Boolean done = false;
@@ -174,50 +172,39 @@ public class Proposer extends Member {
   public void PROPOSE() {
     getMajority();
     System.out.println("PROMISES: " + receivedPromises);
-    ArrayList<String> Promises = receivedPromises;
-    if (Promises.size() >= majority) {
-      value = proposedValue;
-      for (String promise : Promises) {
+
+    if (receivedPromises.size() >= majority) {
+      proposedValue = name;
+      for (String promise : receivedPromises) {
         String split[] = promise.split(";");
         Double acceptedID = Double.parseDouble(promise.split(";")[2]);
 
         if (acceptedID > max_ID) {
           max_ID = acceptedID;
-          value = split[0];
+          proposedValue = split[3];
         }
       }
       getMajority();
 
       try {
-        currentMsg = name + ";PROPOSE;" + max_ID + ";" + value;
+        currentMsg = name + ";PROPOSE;" + max_ID + ";" + proposedValue;
         send(currentMsg);
         trace("send", currentMsg, isLeader);
-        acceptedValue = value;
-        proposedValue = value;
-
-        if (goesOffline == true) {
-          this.delay = null;
-          this.isLeader = false;
-          consensusReached = true;
-          done = true;
-        }
+        acceptedValue = proposedValue;
       } catch (IOException e) {
         e.printStackTrace();
       }
-    } else {
-      try {
-        if (value == null) {
-          value = name;
-        } else {
-          value = proposedValue;
+    } else if (!receivedPromises.isEmpty()) {
+      if (acceptedValue == null) {
+        PREPARE();
+      } else {
+        try {
+          currentMsg = name + ";PROPOSE;" + max_ID + ";" + acceptedValue;
+          send(currentMsg);
+          trace("send", currentMsg, isLeader);
+        } catch (IOException e) {
+          e.printStackTrace();
         }
-        currentMsg = name + ";PROPOSE;" + max_ID + ";" + value;
-        send(currentMsg);
-        trace("send", currentMsg, isLeader);
-        acceptedValue = value;
-        proposedValue = value;
-      } catch (IOException e) {
-        e.printStackTrace();
       }
     }
   }
@@ -322,6 +309,18 @@ public class Proposer extends Member {
    * Send Consensus for the accepted value.
    */
   public void handleAccept(String line) {
+    // If set to go offline, die after proposal has been accepted.
+    if (goesOffline == true) {
+      this.delay = null;
+      this.isLeader = false;
+      consensusReached = true;
+      done = true;
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
     System.out.println("ACCEPTS: " + receivedAccepts);
     if (!receivedAccepts.contains(line)) {
       receivedAccepts.add(line);
@@ -336,7 +335,7 @@ public class Proposer extends Member {
     if (validAccepts >= majority) {
       consensusReached = true;
       try {
-        System.out.println(name + ": SENDING CONSENSUS. for: " + value);
+        System.out.println(name + ": SENDING CONSENSUS. for: " + acceptedValue);
         currentMsg = "CONSENSUS";
         send(currentMsg);
         trace("send", currentMsg, isLeader);
@@ -385,6 +384,7 @@ public class Proposer extends Member {
      * The main listening loop.
      * Exit on Consensus Reached.
      * Leader Will exit last when connections are 1 or less.
+     * Will re-elect a new leader, if a leader is not found.
      */
     while (!consensusReached) {
       String line;

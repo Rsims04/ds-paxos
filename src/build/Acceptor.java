@@ -40,7 +40,6 @@ public class Acceptor extends Member {
 
   // MESSAGING
   String currentMsg = "";
-  String value;
 
   ArrayList<String> receivedPromises2 = new ArrayList<String>();
 

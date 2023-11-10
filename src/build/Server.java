@@ -35,6 +35,9 @@ public class Server {
 
   ArrayList<Connection> connections = new ArrayList<Connection>();
 
+  /**
+   * Checks and Updates the current connection threads.
+   */
   Runnable checkConnections = new Runnable() {
     public void run() {
       Integer size = connections.size();
@@ -65,6 +68,9 @@ public class Server {
     }
   };
 
+  /**
+   * Accept an incoming connection.
+   */
   public void acceptConnection() throws IOException {
     this.memberSocket = this.serverSocket.accept();
     this.in =
@@ -72,12 +78,18 @@ public class Server {
     this.out = new PrintWriter(memberSocket.getOutputStream(), true);
   }
 
+  /**
+   * Update threads current connections.
+   */
   public void updateConnections() {
     for (Connection connection : connections) {
       connection.t.setConnections(connections);
     }
   }
 
+  /**
+   * Get and Send a unique ID to a member.
+   */
   public void getID() throws IOException {
     String msg;
     try {
@@ -101,6 +113,9 @@ public class Server {
     }
   }
 
+  /**
+   * Listens for incoming connections and handles each into a new thread.
+   */
   public void start(Integer port) throws IOException {
     this.memberSocket = null;
     this.serverSocket = new ServerSocket(port);
@@ -133,7 +148,6 @@ public class Server {
         } catch (IOException e) {
           memberSocket.close();
           System.err.println("IO server failure.");
-          // e.printStackTrace();
         }
       }
     }
@@ -213,6 +227,18 @@ class ConnectionThread extends Thread {
     return connections.size();
   }
 
+  public Boolean getIsLeader() {
+    return isLeader;
+  }
+
+  public void setConnections(ArrayList<Connection> a) {
+    connections = a;
+    out.println("CONNECTIONS;" + connections.size());
+  }
+
+  /**
+   * Forward a received message to all other connections.
+   */
   public void sendAll(String msg) {
     for (Connection connection : connections) {
       if (connection.ID != ID) {
@@ -223,20 +249,19 @@ class ConnectionThread extends Thread {
     System.out.println(msg + " forwarded.");
   }
 
+  /**
+   * Forward a received message to only the leader.
+   */
   public synchronized void sendLeader(String msg) {
     if (this.leader != null) {
       System.out.println(name + " --> " + msg + " --> leader: " + leader.name);
       leader.t.out.println(msg);
-      // } else {
-      //   sendAll("NO LEADER");
-      // }
     }
   }
 
-  public Boolean getIsLeader() {
-    return isLeader;
-  }
-
+  /**
+   * Sets the new leader and notifies other connections that a new leader is found.
+   */
   public synchronized void setLeader(String leaderName, String leaderID) {
     for (Connection connection : connections) {
       connection.t.isLeader = false;
@@ -249,11 +274,10 @@ class ConnectionThread extends Thread {
     }
   }
 
-  public void setConnections(ArrayList<Connection> a) {
-    connections = a;
-    out.println("CONNECTIONS;" + connections.size());
-  }
-
+  /**
+   * Get the current leader, if it exists.
+   * Otherwise, send out no leader message.
+   */
   public void getLeader() {
     Boolean leaderFound = false;
     for (Connection connection : connections) {
@@ -263,17 +287,7 @@ class ConnectionThread extends Thread {
         break;
       }
     }
-    // if (!leaderFound) {
-    //   out.println("NO LEADER");
-    // } else {
-    //   out.println(this.leader.name + ";LEADER FOUND");
-    //   System.out.println(name + " Leader found.");
-    //   // for (Connection connection : connections) {
-    //   //   System.out.println(
-    //   //     "connection" + connection.t.ID + connection.t.isLeader
-    //   //   );
-    //   // }
-    // }
+
     if (!leaderFound) {
       out.println("NO LEADER");
     }
@@ -283,6 +297,9 @@ class ConnectionThread extends Thread {
   public synchronized void run() {
     String line;
 
+    /**
+     * Listen to incoming messages and forward appropriately.
+     */
     try {
       while (
         (line = in.readLine()) != null &&
@@ -345,10 +362,6 @@ class ConnectionThread extends Thread {
             getLeader();
             sendLeader(message);
           }
-
-          // if (message.equals("LEADER FOUND")) {
-          //   getLeader();
-          // }
 
           if (message.equals("IS LEADER?")) {
             getLeader();
